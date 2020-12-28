@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>VELAppsHub.App</StartupObject>
+    <AssemblyName>VELAppsHub</AssemblyName>
+    <RootNamespace>VELAppsHub</RootNamespace>
+    <Authors>Anton Franzluebbers</Authors>
+    <Company>VEL</Company>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,24 @@
+﻿<Window x:Class="VELAppsHub.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VELAppsHub"
+        mc:Ignorable="d"
+        Title="VEL Apps Hub" Height="450" Width="900" FontSize="18">
+	<Grid>
+		<ScrollViewer VerticalScrollBarVisibility="Auto">
+			<WrapPanel x:Name="appsContainer" Orientation="Horizontal">
+				<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,16,16,16" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Visibility="Visible">
+					<Label x:Name="AppTitle" Content="AppTitle" HorizontalAlignment="Center"/>
+					<Image x:Name="image" VerticalAlignment="Top" Height="100"/>
+					<Button x:Name="Update" Content="Update"/>
+					<Button x:Name="Install" Content="Install"/>
+					<Button x:Name="Uninstall" Content="Uninstall"/>
+					<Button x:Name="Open" Content="Open"/>
+				</StackPanel>
+			</WrapPanel>
+		</ScrollViewer>
+
+	</Grid>
+</Window>
