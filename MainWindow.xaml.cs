@@ -1,9 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Windows;
@@ -17,7 +18,9 @@ namespace VELAppsHub
 	{
 
 		public const string updateURL = "http://127.0.0.1:5000/get_apps";
+		private const string versionFileName = "velappshub_appversion.txt";
 		public AppsResponse appsData;
+		private List<UIElement> appsUI = new List<UIElement>();
 
 		public string appsInstallPath;
 
@@ -87,32 +90,47 @@ namespace VELAppsHub
 
 
 
+			RefreshUI();
+
+		}
+
+		private void RefreshUI()
+		{
 			if (appsData != null && appsData.apps != null)
 			{
+				foreach (var app in appsUI)
+				{
+					appsContainer.Children.Remove(app);
+				}
+				appsUI.Clear();
+
 				foreach (var app in appsData.apps)
 				{
 					AddAppUI(app);
 				}
 			}
-
 		}
 
 		private void AddAppUI(AppsResponse.App app)
 		{
-			Button button = new Button
+			//Button button = new Button
+			//{
+			//	Background = Brushes.LightGray,
+			//	Width = 250,
+			//	Height = 250,
+			//	Margin = new Thickness(16, 16, 16, 16),
+			//};
+			//button.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
+			StackPanel panel = new StackPanel
 			{
 				Background = Brushes.LightGray,
 				Width = 250,
 				Height = 250,
 				Margin = new Thickness(16, 16, 16, 16),
 			};
-			button.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
-			StackPanel panel = new StackPanel
-			{
-				Width = 250,
-				Height = 250,
-			};
-			button.Content = panel;
+			appsContainer.Children.Add(panel);
+			appsUI.Add(panel);
+			//button.Content = panel;
 			Label title = new Label
 			{
 				Content = app.name,
@@ -123,24 +141,109 @@ namespace VELAppsHub
 			Image thumbnail = new Image
 			{
 				Source = new BitmapImage(new Uri(app.thumbnail)),
+				MaxHeight = 100
 			};
 			panel.Children.Add(thumbnail);
+			if (IsAppInstalled(app))
+			{
+				if (GetInstalledAppVersion(app) != app.version)
+				{
+					Button updateButton = new Button
+					{
+						Content = "Update"
+					};
+					updateButton.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
+					panel.Children.Add(updateButton);
+				}
 
-			appsContainer.Children.Add(button);
+				Button uninstallButton = new Button
+				{
+					Content = "Uninstall"
+				};
+				uninstallButton.Click += new RoutedEventHandler((s, e) => { UninstallApp(app); });
+				panel.Children.Add(uninstallButton);
+
+				Button openButton = new Button
+				{
+					Content = "Open"
+				};
+				openButton.Click += new RoutedEventHandler((s, e) => { OpenApp(app); });
+				panel.Children.Add(openButton);
+			}
+			else
+			{
+				Button installButton = new Button
+				{
+					Content = "Install"
+				};
+				installButton.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
+				panel.Children.Add(installButton);
+			}
+
+		}
+
+		private string GetInstalledAppVersion(AppsResponse.App app)
+		{
+			string targetFolderName = Path.Combine(appsInstallPath, app.name);
+			if (!Directory.Exists(targetFolderName)) return null;
+
+			string versionFile = Path.Combine(targetFolderName, versionFileName);
+			if (!File.Exists(versionFile)) return null;
+			return File.ReadAllText(versionFile);
+		}
+
+		public bool IsAppInstalled(AppsResponse.App app)
+		{
+			string targetFolderName = Path.Combine(appsInstallPath, app.name);
+			return Directory.Exists(targetFolderName);
 		}
 
 		public void InstallApp(AppsResponse.App app)
 		{
-			string targetFolderName = Path.Combine(appsInstallPath, app.name);
 			string downloadsFolderName = Path.Combine(appsInstallPath, "Downloads");
 			string filename = Path.Combine(downloadsFolderName, Path.GetFileName(app.download));
 
 			WebClient webClient = new WebClient();
-			webClient.DownloadFileCompleted += (s, e) => { ActuallyInstallApp(filename, targetFolderName); };
+			webClient.DownloadFileCompleted += (s, e) => { ActuallyInstallApp(filename, app); };
 			webClient.DownloadProgressChanged += ProgressChanged;
-			//webClient.DownloadFileAsync(new Uri(app.download), Path.GetTempPath() + Path.GetFileName(app.download));
 			if (!Directory.Exists(downloadsFolderName)) Directory.CreateDirectory(downloadsFolderName);
 			webClient.DownloadFileAsync(new Uri(app.download), filename);
+		}
+
+		public void UninstallApp(AppsResponse.App app)
+		{
+			string targetFolderName = Path.Combine(appsInstallPath, app.name);
+			Directory.Delete(targetFolderName, true);
+
+			RefreshUI();
+		}
+
+		/// <summary>
+		/// Finds the relevant exe and runs it
+		/// </summary>
+		/// <param name="app"></param>
+		public void OpenApp(AppsResponse.App app)
+		{
+			string targetFolderName = Path.Combine(appsInstallPath, app.name);
+			//// go up to 3 levels deep
+			//string folder = null;
+			//for (int i = 0; i < 3; i++)
+			//{
+			//	if (Directory.EnumerateFiles(targetFolderName).Contains("UnityCrashHandler64.exe"))
+			//	{
+			//		folder = true;
+			//		break;
+			//	}
+			//}
+			//if (folder == null) return;
+
+			List<string> filteredFiles = Directory.EnumerateFiles(targetFolderName).Where(f => f.EndsWith(".exe") && !f.EndsWith("UnityCrashHandler64.exe")).ToList();
+			if (filteredFiles.Count != 1) return;
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = filteredFiles[0],
+				UseShellExecute = true
+			});
 		}
 
 		private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -148,10 +251,17 @@ namespace VELAppsHub
 
 		}
 
-		private void ActuallyInstallApp(string zipName, string targetDirectory)
+		private void ActuallyInstallApp(string zipName, AppsResponse.App app)
 		{
+			string targetFolderName = Path.Combine(appsInstallPath, app.name);
 			// unzip the zip 🤐
-			ZipFile.ExtractToDirectory(zipName, targetDirectory, true);
+			ZipFile.ExtractToDirectory(zipName, targetFolderName, true);
+
+			// add the version file
+			string versionFile = Path.Combine(targetFolderName, versionFileName);
+			File.WriteAllText(versionFile, app.version);
+
+			RefreshUI();
 		}
 
 		public static void RegisterUriScheme(string UriScheme, string FriendlyName)
@@ -159,7 +269,7 @@ namespace VELAppsHub
 			try
 			{
 				using RegistryKey key = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Classes\\" + UriScheme);
-				string applicationLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "IgniteBot.exe");
+				string applicationLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VELAppsHub.exe");
 
 				key.SetValue("", "URL:" + FriendlyName);
 				key.SetValue("URL Protocol", "");

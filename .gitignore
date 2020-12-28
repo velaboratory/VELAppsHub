@@ -235,3 +235,4 @@ _Pvt_Extensions
 
 zips/
 __pycache__/
+env/

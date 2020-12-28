@@ -9,7 +9,7 @@
 	<Grid>
 		<ScrollViewer VerticalScrollBarVisibility="Auto">
 			<WrapPanel x:Name="appsContainer" Orientation="Horizontal">
-				<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,16,16,16" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Visibility="Visible">
+				<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,16,16,16" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Visibility="Collapsed">
 					<Label x:Name="AppTitle" Content="AppTitle" HorizontalAlignment="Center"/>
 					<Image x:Name="image" VerticalAlignment="Top" Height="100"/>
 					<Button x:Name="Update" Content="Update"/>
