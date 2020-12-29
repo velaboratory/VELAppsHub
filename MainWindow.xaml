@@ -5,18 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VELAppsHub"
         mc:Ignorable="d"
-        Title="VEL Apps Hub" Height="450" Width="900" FontSize="18">
+        Title="VEL Apps Hub" Height="450" Width="900" FontSize="18" Background="{DynamicResource BackgroundColour}">
 	<Grid>
 		<ScrollViewer VerticalScrollBarVisibility="Auto">
 			<WrapPanel x:Name="appsContainer" Orientation="Horizontal">
-				<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,16,16,16" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Visibility="Collapsed">
-					<Label x:Name="AppTitle" Content="AppTitle" HorizontalAlignment="Center"/>
-					<Image x:Name="image" VerticalAlignment="Top" Height="100"/>
-					<Button x:Name="Update" Content="Update"/>
-					<Button x:Name="Install" Content="Install"/>
-					<Button x:Name="Uninstall" Content="Uninstall"/>
-					<Button x:Name="Open" Content="Open"/>
-				</StackPanel>
+				<GroupBox x:Name="groupBox" Header="GroupBox" Visibility="Collapsed">
+					<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource ContainerBackground}" Visibility="Visible">
+						<Label x:Name="AppTitle" Content="AppTitle" HorizontalAlignment="Center"/>
+						<Image x:Name="image" VerticalAlignment="Top" Height="100"/>
+						<Button x:Name="Update" Content="Update"/>
+						<Button x:Name="Install" Content="Install"/>
+						<Button x:Name="Uninstall" Content="Uninstall"/>
+						<Button x:Name="Open" Content="Open"/>
+					</StackPanel>
+				</GroupBox>
 			</WrapPanel>
 		</ScrollViewer>
 

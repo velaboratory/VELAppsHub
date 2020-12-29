@@ -3,7 +3,7 @@
         {
             "name": "ENGREDUVR",
             "description": "Engineering Education at UGA in VR",
-            "folder": "engreduvr/",
+            "folder": "engreduvr",
             "accessible_by": [
                 "engr"
             ]
@@ -11,7 +11,7 @@
         {
             "name": "ENGREDUVR Desktop",
             "description": "Engineering Education at UGA in VR (Desktop Version)",
-            "folder": "engreduvr2d/",
+            "folder": "engreduvr2d",
             "accessible_by": [
                 "engr"
             ]
@@ -19,7 +19,7 @@
         {
             "name": "Virtual Family Room",
             "description": "",
-            "folder": "vfr/",
+            "folder": "vfr",
             "accessible_by": [
                 "vfr"
             ]
@@ -27,7 +27,7 @@
         {
             "name": "VR-Statics",
             "description": "Multi-user statics problems with drawing (2D)",
-            "folder": "vrstatics/",
+            "folder": "vrstatics",
             "accessible_by": [
                 "engr"
             ]

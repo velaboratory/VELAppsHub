@@ -17,10 +17,11 @@ namespace VELAppsHub
 	public partial class MainWindow : Window
 	{
 
-		public const string updateURL = "http://127.0.0.1:5000/get_apps";
+		public const string updateURL = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php";
 		private const string versionFileName = "velappshub_appversion.txt";
 		public AppsResponse appsData;
 		private List<UIElement> appsUI = new List<UIElement>();
+		private Dictionary<AppsResponse.App, ProgressBar> progressBars = new Dictionary<AppsResponse.App, ProgressBar>();
 
 		public string appsInstallPath;
 
@@ -113,72 +114,83 @@ namespace VELAppsHub
 
 		private void AddAppUI(AppsResponse.App app)
 		{
-			//Button button = new Button
-			//{
-			//	Background = Brushes.LightGray,
-			//	Width = 250,
-			//	Height = 250,
-			//	Margin = new Thickness(16, 16, 16, 16),
-			//};
-			//button.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
+			GroupBox groupBox = new GroupBox
+			{
+				Margin = new Thickness(12),
+			};
+			appsContainer.Children.Add(groupBox);
+			appsUI.Add(groupBox);
+			groupBox.Header = app.name;
 			StackPanel panel = new StackPanel
 			{
-				Background = Brushes.LightGray,
 				Width = 250,
 				Height = 250,
-				Margin = new Thickness(16, 16, 16, 16),
 			};
-			appsContainer.Children.Add(panel);
-			appsUI.Add(panel);
-			//button.Content = panel;
+			groupBox.Content = panel;
 			Label title = new Label
 			{
 				Content = app.name,
 				HorizontalAlignment = HorizontalAlignment.Center,
 				FontWeight = FontWeights.Bold
 			};
-			panel.Children.Add(title);
+			//panel.Children.Add(title);
 			Image thumbnail = new Image
 			{
 				Source = new BitmapImage(new Uri(app.thumbnail)),
-				MaxHeight = 100
+				MaxHeight = 150,
+				Margin = new Thickness(0, 0, 0, 4),
 			};
 			panel.Children.Add(thumbnail);
+
+			var buttonPadding = new Thickness(6, 2, 6, 2);
 			if (IsAppInstalled(app))
 			{
 				if (GetInstalledAppVersion(app) != app.version)
 				{
 					Button updateButton = new Button
 					{
-						Content = "Update"
+						Content = "Update",
+						Margin = buttonPadding,
 					};
 					updateButton.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
 					panel.Children.Add(updateButton);
 				}
 
-				Button uninstallButton = new Button
-				{
-					Content = "Uninstall"
-				};
-				uninstallButton.Click += new RoutedEventHandler((s, e) => { UninstallApp(app); });
-				panel.Children.Add(uninstallButton);
-
 				Button openButton = new Button
 				{
-					Content = "Open"
+					Content = "Open",
+					Margin = buttonPadding,
 				};
 				openButton.Click += new RoutedEventHandler((s, e) => { OpenApp(app); });
 				panel.Children.Add(openButton);
+
+				Button uninstallButton = new Button
+				{
+					Content = "Uninstall",
+					Margin = buttonPadding,
+				};
+				uninstallButton.Click += new RoutedEventHandler((s, e) => { UninstallApp(app); });
+				panel.Children.Add(uninstallButton);
 			}
 			else
 			{
 				Button installButton = new Button
 				{
-					Content = "Install"
+					Content = "Install",
+					Margin = buttonPadding,
 				};
 				installButton.Click += new RoutedEventHandler((s, e) => { InstallApp(app); });
 				panel.Children.Add(installButton);
 			}
+
+			ProgressBar progressBar = new ProgressBar
+			{
+				Visibility = Visibility.Collapsed,
+				Height = 14,
+				Margin = buttonPadding,
+			};
+			panel.Children.Add(progressBar);
+			progressBars[app] = progressBar;
 
 		}
 
@@ -204,8 +216,8 @@ namespace VELAppsHub
 			string filename = Path.Combine(downloadsFolderName, Path.GetFileName(app.download));
 
 			WebClient webClient = new WebClient();
+			webClient.DownloadProgressChanged += (s, e) => { ProgressChanged(app, e.ProgressPercentage); };
 			webClient.DownloadFileCompleted += (s, e) => { ActuallyInstallApp(filename, app); };
-			webClient.DownloadProgressChanged += ProgressChanged;
 			if (!Directory.Exists(downloadsFolderName)) Directory.CreateDirectory(downloadsFolderName);
 			webClient.DownloadFileAsync(new Uri(app.download), filename);
 		}
@@ -246,20 +258,33 @@ namespace VELAppsHub
 			});
 		}
 
-		private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+		/// <summary>
+		/// Progress bar is hidden when progress is at 0 or 1
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="progressPercentage">int 0-100</param>
+		private void ProgressChanged(AppsResponse.App app, int progressPercentage)
 		{
-
+			progressBars[app].Visibility = progressPercentage == 0 || progressPercentage == 100 ? Visibility.Collapsed : Visibility.Visible;
+			progressBars[app].Value = progressPercentage;
 		}
 
 		private void ActuallyInstallApp(string zipName, AppsResponse.App app)
 		{
-			string targetFolderName = Path.Combine(appsInstallPath, app.name);
-			// unzip the zip 🤐
-			ZipFile.ExtractToDirectory(zipName, targetFolderName, true);
+			try
+			{
+				string targetFolderName = Path.Combine(appsInstallPath, app.name);
+				// unzip the zip 🤐
+				ZipFile.ExtractToDirectory(zipName, targetFolderName, true);
 
-			// add the version file
-			string versionFile = Path.Combine(targetFolderName, versionFileName);
-			File.WriteAllText(versionFile, app.version);
+				// add the version file
+				string versionFile = Path.Combine(targetFolderName, versionFileName);
+				File.WriteAllText(versionFile, app.version);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Can't read downloaded zip.\n{e}");
+			}
 
 			RefreshUI();
 		}
