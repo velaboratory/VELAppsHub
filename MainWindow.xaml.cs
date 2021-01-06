@@ -6,10 +6,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace VELAppsHub
@@ -18,10 +19,13 @@ namespace VELAppsHub
 	{
 
 		public const string updateURL = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php";
+		public const string selfUpdateURLDownload = "https://github.com/velaboratory/VELAppsHub/releases/latest/download/vel_apps_hub_installer.msi";
+		public const string selfUpdateURL = "https://api.github.com/repos/velaboratory/VELAppsHub/releases/latest";
 		private const string versionFileName = "velappshub_appversion.txt";
 		public AppsResponse appsData;
 		private List<UIElement> appsUI = new List<UIElement>();
 		private Dictionary<AppsResponse.App, ProgressBar> progressBars = new Dictionary<AppsResponse.App, ProgressBar>();
+
 
 		public string appsInstallPath;
 
@@ -39,6 +43,12 @@ namespace VELAppsHub
 			}
 		}
 
+		public class GitHubReleaseResponse
+		{
+			public string message { get; set; }
+			public string documentation_url { get; set; }
+		}
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -46,53 +56,31 @@ namespace VELAppsHub
 			RegisterUriScheme("velappshub", "VEL Apps Hub Protocol");
 			appsInstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "VELApps");
 
+			versionLabel.Content = $"Version: v{AppVersion()}";
+
 			GetApps();
+
+			CheckForHubUpdate();
 		}
 
 		public void GetApps()
 		{
-			WebResponse response;
-			StreamReader sReader;
-			string rawJSON = string.Empty;
-
-			// Do we get a response?
-			try
+			Task.Run(() => GetAsync(updateURL, (rawJSON) =>
 			{
-				// Create Session.
-				WebRequest request = WebRequest.Create(updateURL);
-				response = request.GetResponse();
+				try
+				{
+					appsData = JsonSerializer.Deserialize<AppsResponse>(rawJSON);
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"Can't parse apps/updates response\n{e}");
+				}
 
-				Stream dataStream = response.GetResponseStream();
-				sReader = new StreamReader(dataStream);
-
-				// Session Contents
-				rawJSON = sReader.ReadToEnd();
-
-				// pls close (;-;)
-				if (sReader != null)
-					sReader.Close();
-				if (response != null)
-					response.Close();
-			}
-			catch (Exception)
-			{
-				Console.WriteLine("Can't get apps/updates");
-			}
-
-
-			try
-			{
-				appsData = JsonSerializer.Deserialize<AppsResponse>(rawJSON);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine($"Can't parse apps/updates response\n{e}");
-			}
-
-
-
-			RefreshUI();
-
+				Dispatcher.Invoke(() =>
+				{
+					RefreshUI();
+				});
+			}));
 		}
 
 		private void RefreshUI()
@@ -309,6 +297,63 @@ namespace VELAppsHub
 			{
 				Console.WriteLine($"Failed to set URI scheme\n{e}");
 			}
+		}
+
+
+		private void CheckForHubUpdate()
+		{
+			Task.Run(() => GetAsync(selfUpdateURL, (responseJSON) =>
+			{
+				try
+				{
+					GitHubReleaseResponse releaseResponse = JsonSerializer.Deserialize<GitHubReleaseResponse>(responseJSON);
+
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"Can't parse Hub update response\n{e}");
+				}
+			}));
+		}
+
+		public static async Task GetAsync(string uri, Action<string> callback)
+		{
+			try
+			{
+				HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+				request.UserAgent = $"VELAppsHub v{AppVersion()}";
+				using HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+				using Stream stream = response.GetResponseStream();
+				using StreamReader reader = new StreamReader(stream);
+
+				callback(await reader.ReadToEndAsync());
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Can't get Hub update response\n{e}");
+				callback("");
+			}
+		}
+
+		public static string AppVersion()
+		{
+			var version = Application.Current.GetType().Assembly.GetName().Version;
+			return $"{version.Major}.{version.Minor}.{version.Build}";
+		}
+
+		private void RefreshApps(object sender, RoutedEventArgs e)
+		{
+			GetApps();
+		}
+
+		private void AccessCodeChanged(object sender, TextChangedEventArgs e)
+		{
+
+		}
+
+		private void UpdateHubButtonClicked(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }

@@ -236,3 +236,5 @@ _Pvt_Extensions
 zips/
 __pycache__/
 env/
+VELAppsHubInstaller/Installs/vel_apps_hub_installer.msi
+VELAppsHubInstaller/ComponentsGenerated.wxs

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<?define UpgradeCode = "{5C3F90AD-86CB-4CCE-8FE7-5BF7F7640203}"?>
+	<?define ProductCode = "{B930931C-8E61-4116-9299-CE0EF8A622C4}"?>
+
+
+	<Product Id="*" 
+					 Name="!(loc.ProductName)" 
+					 Language="!(loc.Language)" 
+					 Version="!(bind.FileVersion.fil157DA06C1F481195AD1C71FC86B2504D)"
+					 Manufacturer="!(loc.Company)" 
+					 UpgradeCode="$(var.UpgradeCode)">
+		<Package InstallerVersion="200" 
+						 Compressed="yes" 
+						 InstallScope="perMachine" 
+             Manufacturer="!(loc.Company)"
+             Description="!(loc.Description)"
+             Keywords="!(loc.Keywords)"
+             Comments="!(loc.Comments)"
+             Languages="!(loc.Language)"
+						 />
+
+		<!-- Downgrade error message -->
+		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" />
+
+		<!-- Include .cab file into .msi file -->
+		<MediaTemplate EmbedCab="yes" />
+
+		<!-- Define main app icon -->
+		<Icon Id="icon.ico" SourceFile="..\img\vel_logo.ico"/>
+
+		<!-- Use the icon.ico icon for this installer (shows up in Add/Remove programs) -->
+		<Property Id="ARPPRODUCTICON">icon.ico</Property>
+		<!-- Help/Support website (shows in the Add/Remove programs) -->
+		<Property Id="ARPURLINFOABOUT">https://vel.engr.uga.edu/</Property>
+
+		<!-- Create a basic UI for the installer -->
+		<UI>
+			<UIRef Id="WixUI_InstallDir" />
+
+			<!-- Skip license dialog -->
+			<Publish Dialog="WelcomeDlg"
+							 Control="Next"
+							 Event="NewDialog"
+							 Value="InstallDirDlg"
+							 Order="2">1</Publish>
+			<Publish Dialog="InstallDirDlg"
+							 Control="Back"
+							 Event="NewDialog"
+							 Value="WelcomeDlg"
+							 Order="2">1</Publish>
+			<Publish Dialog="ExitDialog"
+							 Control="Finish"
+							 Event="DoAction"
+							 Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+
+		</UI>
+		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch !(loc.ProductName)"  />
+		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"  />
+
+		<!-- Change the installer UI background images -->
+		<WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Assets\Background.bmp" />
+		<WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Assets\Banner.bmp" />
+
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+		<!-- Change the installer UI background images -->
+
+		<!-- Define components, shortcuts, files etc... for installer -->
+		<Feature Id="ProductFeature" Title="VELAppsHub" Level="1">
+
+			<ComponentGroupRef Id="ProductComponents" />
+			<ComponentGroupRef Id="PublishedComponents" />
+
+		</Feature>
+
+
+		<!-- Run the program after install -->
+		<!-- FileKey is from ComponentsGenerated, so it may change?-->
+		<CustomAction Id="LaunchApplication"
+              Execute="immediate"
+              Impersonate="no"
+              Return="asyncNoWait"
+              FileKey="fil157DA06C1F481195AD1C71FC86B2504D"
+              ExeCommand="" />
+
+	</Product>
+</Wix>

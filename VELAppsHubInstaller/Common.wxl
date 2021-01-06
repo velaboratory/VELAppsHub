@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="Company">University of Georgia</String>
+	<String Id="Description">A Hub for apps created at the Virtual Experiences Laboratory</String>
+	<String Id="Comments">Very cool</String>
+	<String Id="Keywords">vel,vr,virtual reality</String>
+
+	<String Id="DowngradeErrorMessage">A newer version of VELAppsHub is already installed.</String>
+
+	<String Id="ProductName">VELAppsHub</String>
+	<String Id="ProductNameFolder">VELAppsHub</String>
+
+	<String Id="Language">1033</String>
+
+	<String Id="WelcomeDlgDescription">This Setup Wizard will install the VEL Apps Hub on your computer.</String>
+</WixLocalization>

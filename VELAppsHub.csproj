@@ -9,6 +9,17 @@
     <RootNamespace>VELAppsHub</RootNamespace>
     <Authors>Anton Franzluebbers</Authors>
     <Company>VEL</Company>
+    <ApplicationIcon>img\vel_logo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="img\vel_logo.ico" />
+    <None Remove="img\VEL_logo_transparent.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="img\vel_logo.ico" />
+    <Resource Include="img\VEL_logo_transparent.png" />
+  </ItemGroup>
 
 </Project>

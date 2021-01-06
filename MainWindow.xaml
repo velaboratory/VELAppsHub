@@ -5,9 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VELAppsHub"
         mc:Ignorable="d"
-        Title="VEL Apps Hub" Height="450" Width="900" FontSize="18" Background="{DynamicResource BackgroundColour}">
+        Title="VEL Apps Hub" 
+		Height="540" Width="810" 
+		FontSize="16" 
+		Background="{DynamicResource BackgroundColour}" 
+		Icon="/img/vel_logo.ico">
 	<Grid>
-		<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="200"/>
+			<ColumnDefinition Width="4"/>
+			<ColumnDefinition Width="100*"/>
+		</Grid.ColumnDefinitions>
+		<StackPanel x:Name="leftSidebar" Grid.Column="0">
+			<Button x:Name="updateButton" Content="Update Hub" Margin="4,4,4,4" Padding="5,5,5,5" ScrollViewer.CanContentScroll="True" Visibility="Collapsed" Click="UpdateHubButtonClicked"/>
+			<ProgressBar x:Name="updateProgressBar" Height="15" Margin="4,4,4,4" Visibility="Collapsed"/>
+			<Image Source="/img/VEL_logo_transparent.png" Margin="10,10,10,10"/>
+			<TextBlock Text="VEL Apps Hub" Margin="10,10,10,10" HorizontalAlignment="Center" FontSize="20"/>
+			<TextBlock Text="Install and update apps made in the Virtual Experience Laboratory at the University of Georgia" Margin="10,10,10,10" HorizontalAlignment="Center" FontSize="14" TextWrapping="Wrap"/>
+			<GroupBox x:Name="groupBox1" Header="Access Code">
+				<StackPanel>
+					<TextBlock x:Name="textBlock" Text="Enter an access code to make apps available to download." Margin="10,10,10,10" TextWrapping="Wrap" FontSize="16"/>
+					<TextBox x:Name="textBox" TextWrapping="Wrap" Margin="10,10,10,10" TextChanged="AccessCodeChanged"/>
+					<Button x:Name="refreshButton" Content="Refresh" Click="RefreshApps" Margin="10,10,10,10"/>
+				</StackPanel>
+			</GroupBox>
+		</StackPanel>
+		<Rectangle Grid.Column="1" Fill="{DynamicResource ContainerBackground}"></Rectangle>
+		<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="2" HorizontalAlignment="Stretch">
 			<WrapPanel x:Name="appsContainer" Orientation="Horizontal">
 				<GroupBox x:Name="groupBox" Header="GroupBox" Visibility="Collapsed">
 					<StackPanel x:Name="ExampleApp" Height="250" Width="250" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource ContainerBackground}" Visibility="Visible">
@@ -22,5 +46,6 @@
 			</WrapPanel>
 		</ScrollViewer>
 
+		<Label x:Name="versionLabel" Content="Version: ???" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,5" Grid.Column="0" FontSize="12" Padding="5,3,5,5" Foreground="#FFA42525"/>
 	</Grid>
 </Window>
