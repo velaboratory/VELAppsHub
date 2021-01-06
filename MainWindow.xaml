@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:VELAppsHub"
         mc:Ignorable="d"
         Title="VEL Apps Hub" 
-		Height="540" Width="810" 
+		Height="560" Width="810" 
 		FontSize="16" 
 		Background="{DynamicResource BackgroundColour}" 
 		Icon="/img/vel_logo.ico">
@@ -24,8 +24,8 @@
 			<TextBlock Text="Install and update apps made in the Virtual Experience Laboratory at the University of Georgia" Margin="10,10,10,10" HorizontalAlignment="Center" FontSize="14" TextWrapping="Wrap"/>
 			<GroupBox x:Name="groupBox1" Header="Access Code">
 				<StackPanel>
-					<TextBlock x:Name="textBlock" Text="Enter an access code to make apps available to download." Margin="10,10,10,10" TextWrapping="Wrap" FontSize="16"/>
-					<TextBox x:Name="textBox" TextWrapping="Wrap" Margin="10,10,10,10" TextChanged="AccessCodeChanged"/>
+					<TextBlock x:Name="textBlock" Text="Enter an access code to make apps available to download." Margin="10,10,10,10" TextWrapping="Wrap" FontSize="14"/>
+					<TextBox x:Name="accessCodeTextBox" TextWrapping="Wrap" Margin="10,10,10,4" TextChanged="AccessCodeChanged"/>
 					<Button x:Name="refreshButton" Content="Refresh" Click="RefreshApps" Margin="10,10,10,10"/>
 				</StackPanel>
 			</GroupBox>
@@ -47,5 +47,7 @@
 		</ScrollViewer>
 
 		<Label x:Name="versionLabel" Content="Version: ???" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,5" Grid.Column="0" FontSize="12" Padding="5,3,5,5" Foreground="#FFA42525"/>
+		<TextBlock x:Name="noAppsAvailableTextBlock" Text="No apps available. Enter an access code in the text box on the left." HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2" TextAlignment="Center" Margin="10,10,10,10" Visibility="Collapsed"/>
+		<TextBlock x:Name="getAppsFailedTextBlock" Text="Failed to get apps. Check your internet connection or contact someone from the VEL to fix this." HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2" TextAlignment="Center" Margin="10,10,10,10" Visibility="Collapsed"/>
 	</Grid>
 </Window>

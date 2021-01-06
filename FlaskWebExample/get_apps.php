@@ -3,6 +3,9 @@
 $apps_json = file_get_contents("apps.json");
 $apps = json_decode($apps_json, true);
 
+$access_code = $_GET["access_code"];
+
+$apps_arr = array();
 for ($i = 0; $i < count($apps["apps"]); $i++) {
     // thumbnail url
     $apps["apps"][$i]["thumbnail"] = get_current_folder_url() . "static/" . $apps["apps"][$i]["folder"] . "/thumbnail.png";
@@ -15,7 +18,13 @@ for ($i = 0; $i < count($apps["apps"]); $i++) {
         $apps["apps"][$i]["version"] = $version;
         $apps["apps"][$i]["download"] = get_current_folder_url() . "/static/" . $apps["apps"][$i]["folder"] . "/zips/" . $files[0];
     }
+
+    if (in_array($access_code, $apps["apps"][$i]["accessible_by"])) {
+        array_push($apps_arr, $apps["apps"][$i]);
+    }
 }
+
+$apps["apps"] = $apps_arr;
 
 header('Content-type: application/json');
 echo json_encode($apps);

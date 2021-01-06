@@ -1,33 +1,36 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using VELAppsHub.Properties;
 
 namespace VELAppsHub
 {
 	public partial class MainWindow : Window
 	{
 
-		public const string updateURL = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php";
+		public const string updateURL = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php?access_code=";
 		public const string selfUpdateURLDownload = "https://github.com/velaboratory/VELAppsHub/releases/latest/download/vel_apps_hub_installer.msi";
 		public const string selfUpdateURL = "https://api.github.com/repos/velaboratory/VELAppsHub/releases/latest";
 		private const string versionFileName = "velappshub_appversion.txt";
+		private const string installerFileName = "vel_apps_hub_installer.msi";
 		public AppsResponse appsData;
 		private List<UIElement> appsUI = new List<UIElement>();
 		private Dictionary<AppsResponse.App, ProgressBar> progressBars = new Dictionary<AppsResponse.App, ProgressBar>();
 
 
 		public string appsInstallPath;
+
 
 		public class AppsResponse
 		{
@@ -45,8 +48,8 @@ namespace VELAppsHub
 
 		public class GitHubReleaseResponse
 		{
-			public string message { get; set; }
-			public string documentation_url { get; set; }
+			public string tag_name { get; set; }
+			public string body { get; set; }
 		}
 
 		public MainWindow()
@@ -58,6 +61,8 @@ namespace VELAppsHub
 
 			versionLabel.Content = $"Version: v{AppVersion()}";
 
+			accessCodeTextBox.Text = Settings.Default.accessCode;
+
 			GetApps();
 
 			CheckForHubUpdate();
@@ -65,7 +70,8 @@ namespace VELAppsHub
 
 		public void GetApps()
 		{
-			Task.Run(() => GetAsync(updateURL, (rawJSON) =>
+			string url = updateURL + accessCodeTextBox.Text;
+			Task.Run(() => GetAsync(url, (rawJSON) =>
 			{
 				try
 				{
@@ -97,6 +103,20 @@ namespace VELAppsHub
 				{
 					AddAppUI(app);
 				}
+
+				if (appsData.apps.Length == 0)
+				{
+					noAppsAvailableTextBlock.Visibility = Visibility.Visible;
+				}
+				else
+				{
+					noAppsAvailableTextBlock.Visibility = Visibility.Collapsed;
+				}
+				getAppsFailedTextBlock.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				getAppsFailedTextBlock.Visibility = Visibility.Visible;
 			}
 		}
 
@@ -308,6 +328,18 @@ namespace VELAppsHub
 				{
 					GitHubReleaseResponse releaseResponse = JsonSerializer.Deserialize<GitHubReleaseResponse>(responseJSON);
 
+					// if an update is available
+					if (releaseResponse.tag_name != AppVersion(false) &&
+						releaseResponse.tag_name != AppVersion(true) + ".0" &&
+						releaseResponse.tag_name != "v" + AppVersion(false) &&
+						releaseResponse.tag_name != "v" + AppVersion(true) + ".0")
+					{
+						Dispatcher.Invoke(() =>
+						{
+							updateButton.Visibility = Visibility.Visible;
+						});
+					}
+
 				}
 				catch (Exception e)
 				{
@@ -335,14 +367,17 @@ namespace VELAppsHub
 			}
 		}
 
-		public static string AppVersion()
+		public static string AppVersion(bool noBuildNumber = false)
 		{
 			var version = Application.Current.GetType().Assembly.GetName().Version;
-			return $"{version.Major}.{version.Minor}.{version.Build}";
+			if (noBuildNumber) return $"{version.Major}.{version.Minor}";
+			else return $"{version.Major}.{version.Minor}.{version.Build}";
 		}
 
 		private void RefreshApps(object sender, RoutedEventArgs e)
 		{
+			Settings.Default.accessCode = accessCodeTextBox.Text;
+			Settings.Default.Save();
 			GetApps();
 		}
 
@@ -353,7 +388,30 @@ namespace VELAppsHub
 
 		private void UpdateHubButtonClicked(object sender, RoutedEventArgs e)
 		{
+			WebClient webClient = new WebClient();
+			webClient.DownloadFileCompleted += Completed;
+			webClient.DownloadProgressChanged += ProgressChanged;
+			webClient.DownloadFileAsync(new Uri(selfUpdateURLDownload), Path.Combine(Path.GetTempPath(), installerFileName));
+		}
 
+		private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+		{
+			updateProgressBar.Visibility = Visibility.Visible;
+			updateProgressBar.Value = e.ProgressPercentage;
+		}
+
+		private void Completed(object sender, AsyncCompletedEventArgs e)
+		{
+			updateProgressBar.Visibility = Visibility.Collapsed;
+
+			// Install the update
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = Path.Combine(Path.GetTempPath(), installerFileName),
+				UseShellExecute = true
+			});
+
+			Close();
 		}
 	}
 }
