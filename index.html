@@ -132,6 +132,7 @@
     </div>
     <script>
         const { ipcRenderer } = require('electron');
+        const { download } = require('electron-dl');
         const version = document.getElementById('version');
 
         ipcRenderer.send('app_version');
@@ -159,6 +160,17 @@
             notification.classList.remove('hidden');
         });
 
+        ipcRenderer.on("download complete", (event, file) => {
+            console.log("HERE2");
+            console.log(file); // Full file path
+        });
+
+        ipcRenderer.on("download progress", (event, progress) => {
+            console.log(progress); // Progress in fraction, between 0 and 1
+            const progressInPercentages = progress * 100; // With decimal point and a bunch of numbers
+            const cleanProgressInPercentages = Math.floor(progress * 100); // Without decimal point
+        });
+
         function closeNotification() {
             notification.classList.add('hidden');
         }
@@ -181,13 +193,35 @@
             xmlHttp.send(null);
         }
 
+        var userDataPath = "";
+
+        ipcRenderer.send('user_data');
+        ipcRenderer.on('user_data', (event, arg) => {
+            ipcRenderer.removeAllListeners('user_data');
+            userDataPath = arg.path;
+        });
+
+        console.log(userDataPath);
+
+        function downloadZip(url) {
+            ipcRenderer.send("download", {
+                url: url,
+                properties: { directory: userDataPath }
+            });
+        }
+
+
         var apps = [];
 
 
+
         function refreshApps() {
+
+
+
+
             var url = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php?access_code=" + accessCodeInput.value;
             httpGetAsync(url, (data) => {
-                console.log(data);
                 data = JSON.parse(data);
 
                 // Delete all the old apps
@@ -197,7 +231,6 @@
                 apps = [];
 
                 data.apps.forEach(app => {
-                    console.log(app.name);
 
                     var appBox = document.createElement("div");
                     appBox.classList.add("app_box");
@@ -231,6 +264,7 @@
                     var updateButton = document.createElement("a");
                     updateButton.innerText = "Update";
                     updateButton.href = "#";
+                    updateButton.addEventListener("click", () => downloadZip(app.download));
                     updateButtonLi.appendChild(updateButton);
 
                     // INSTALL
@@ -239,6 +273,7 @@
                     var installButton = document.createElement("a");
                     installButton.innerText = "Install";
                     installButton.href = "#";
+                    installButton.addEventListener("click", () => downloadZip(app.download));
                     installButtonLi.appendChild(installButton);
 
                     // UNINSTALL
