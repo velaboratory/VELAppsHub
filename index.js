@@ -5,8 +5,8 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1280,
+        height: 800,
         webPreferences: {
             nodeIntegration: true,
         },
@@ -50,4 +50,4 @@ autoUpdater.on('update-downloaded', () => {
 
 ipcMain.on('restart_app', () => {
     autoUpdater.quitAndInstall();
-  });
+});

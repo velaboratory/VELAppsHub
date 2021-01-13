@@ -1,16 +1,82 @@
 <!DOCTYPE html>
 
 <head>
-    <title>Electron Auto Update Example</title>
+    <title>VEL Apps Hub</title>
     <style>
         body {
             box-sizing: border-box;
             margin: 0;
-            padding: 20px;
             font-family: sans-serif;
-            background-color: #eaeaea;
             text-align: center;
+            background-color: #333;
+            color: #ccc;
         }
+
+        .flex_content {
+            display: flex;
+            position: absolute;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .left_sidebar {
+            max-width: 20em;
+            min-width: 15em;
+            box-shadow: black 0 0 1em;
+        }
+
+        #logo_img {
+            margin: 1em;
+            width: 100%;
+            max-width: 10em;
+        }
+
+        .not_left_sidebar {
+            box-shadow: black 0 0 1em;
+        }
+
+        #flex_apps {
+            display: flex;
+            flex-wrap: wrap;
+            height: 100%;
+            overflow-y: scroll;
+        }
+
+        #flex_apps .app_box {
+            max-width: 15em;
+            background-color: #222;
+            margin: 1em;
+            padding: 1em;
+            flex-grow: 1;
+        }
+
+        #flex_apps .thumbnail {
+            width: 100%;
+        }
+
+        #flex_apps ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #flex_apps li {
+            margin: .2em;
+        }
+
+        #flex_apps a {
+            padding: .2em;
+            display: block;
+            text-decoration: none;
+            color: #ccc;
+            background-color: #433;
+        }
+
+        #flex_apps a:hover {
+            background-color: #544;
+        }
+
+
 
         #notification {
             position: fixed;
@@ -30,8 +96,7 @@
 </head>
 
 <body>
-    <h1>Electron Auto Update Example</h1>
-    <p id="version"></p>
+
     <div id="notification" class="hidden">
         <p id="message"></p>
         <button id="close-button" onClick="closeNotification()">
@@ -40,6 +105,30 @@
         <button id="restart-button" onClick="restartApp()" class="hidden">
             Restart
         </button>
+    </div>
+
+
+    <div class="flex_content">
+        <div class="left_sidebar">
+            <img id="logo_img" src="img/VEL_logo_transparent.png">
+            <h1>VEL Apps Hub</h1>
+            <p>Install and update apps made in the Virtual Experience Laboratory at the University of Georgia</p>
+            <div class="access_code_box">
+                <h2>Access Code</h2>
+                <p>Enter an access code to make apps available to download.</p>
+                <form id="access_code_form">
+                    <input id="access_code_input" type="text">
+                    <input type="submit" value="Refresh">
+                </form>
+            </div>
+            <p id="version"></p>
+        </div>
+        <div class="not_left_sidebar">
+            <div id="flex_apps">
+            </div>
+        </div>
+
+
     </div>
     <script>
         const { ipcRenderer } = require('electron');
@@ -54,6 +143,8 @@
         const notification = document.getElementById('notification');
         const message = document.getElementById('message');
         const restartButton = document.getElementById('restart-button');
+        const accessCodeInput = document.getElementById('access_code_input');
+        const appsFlex = document.getElementById('flex_apps');
 
         ipcRenderer.on('update_available', () => {
             ipcRenderer.removeAllListeners('update_available');
@@ -69,9 +160,101 @@
         });
 
         function closeNotification() {
-  notification.classList.add('hidden');
-}function restartApp() {
-  ipcRenderer.send('restart_app');
-}
+            notification.classList.add('hidden');
+        }
+        function restartApp() {
+            ipcRenderer.send('restart_app');
+        }
+
+        const form = document.getElementById("access_code_form");
+        function handleForm(event) { event.preventDefault(); refreshApps() }
+        form.addEventListener('submit', handleForm);
+
+
+        function httpGetAsync(theUrl, callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+            xmlHttp.send(null);
+        }
+
+        var apps = [];
+
+
+        function refreshApps() {
+            var url = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php?access_code=" + accessCodeInput.value;
+            httpGetAsync(url, (data) => {
+                console.log(data);
+                data = JSON.parse(data);
+
+                // Delete all the old apps
+                apps.forEach(app => {
+                    app.remove();
+                });
+                apps = [];
+
+                data.apps.forEach(app => {
+                    console.log(app.name);
+
+                    var appBox = document.createElement("div");
+                    appBox.classList.add("app_box");
+                    appsFlex.appendChild(appBox);
+                    apps.push(appBox);
+
+                    var header = document.createElement("h2");
+                    header.innerText = app.name;
+                    appBox.appendChild(header);
+
+
+                    var img = document.createElement("img");
+                    img.classList.add("thumbnail");
+                    img.src = app.thumbnail;
+                    appBox.appendChild(img);
+
+                    var buttonsList = document.createElement("ul");
+                    appBox.appendChild(buttonsList);
+
+                    // OPEN
+                    var openButtonLi = document.createElement("li");
+                    buttonsList.appendChild(openButtonLi);
+                    var openButton = document.createElement("a");
+                    openButton.innerText = "Open";
+                    openButton.href = "#";
+                    openButtonLi.appendChild(openButton);
+
+                    // UPDATE
+                    var updateButtonLi = document.createElement("li");
+                    buttonsList.appendChild(updateButtonLi);
+                    var updateButton = document.createElement("a");
+                    updateButton.innerText = "Update";
+                    updateButton.href = "#";
+                    updateButtonLi.appendChild(updateButton);
+
+                    // INSTALL
+                    var installButtonLi = document.createElement("li");
+                    buttonsList.appendChild(installButtonLi);
+                    var installButton = document.createElement("a");
+                    installButton.innerText = "Install";
+                    installButton.href = "#";
+                    installButtonLi.appendChild(installButton);
+
+                    // UNINSTALL
+                    var uninstallButtonLi = document.createElement("li");
+                    buttonsList.appendChild(uninstallButtonLi);
+                    var uninstallButton = document.createElement("a");
+                    uninstallButton.innerText = "Uninstall";
+                    uninstallButton.href = "#";
+                    uninstallButtonLi.appendChild(uninstallButton);
+
+
+
+
+
+                });
+            });
+        }
     </script>
 </body>
