@@ -1,4 +1,6 @@
-﻿using Microsoft.Win32;
+﻿#if WINDOWS
+using Microsoft.Win32;
+#endif
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -299,6 +301,7 @@ namespace VELAppsHub
 
 		public static void RegisterUriScheme(string UriScheme, string FriendlyName)
 		{
+#if WINDOWS
 			try
 			{
 				using RegistryKey key = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Classes\\" + UriScheme);
@@ -317,6 +320,7 @@ namespace VELAppsHub
 			{
 				Console.WriteLine($"Failed to set URI scheme\n{e}");
 			}
+#endif
 		}
 
 

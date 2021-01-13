@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <StartupObject>VELAppsHub.App</StartupObject>
     <AssemblyName>VELAppsHub</AssemblyName>
@@ -10,7 +10,7 @@
     <Authors>Anton Franzluebbers</Authors>
     <Company>VEL</Company>
     <ApplicationIcon>img\vel_logo.ico</ApplicationIcon>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
