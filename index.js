@@ -11,7 +11,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
         },
-        icon: 'img/vel_logo.ico'
+        // icon: 'img/vel_logo.ico'
     });
     mainWindow.loadFile('index.html');
 

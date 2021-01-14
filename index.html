@@ -110,7 +110,7 @@
 
     <div class="flex_content">
         <div class="left_sidebar">
-            <img id="logo_img" src="img/VEL_logo_transparent.png">
+            <img id="logo_img" src="public/img/VEL_logo_transparent.png">
             <h1>VEL Apps Hub</h1>
             <p>Install and update apps made in the Virtual Experience Laboratory at the University of Georgia</p>
             <div class="access_code_box">
@@ -195,13 +195,12 @@
 
         var userDataPath = "";
 
-        ipcRenderer.send('user_data');
-        ipcRenderer.on('user_data', (event, arg) => {
-            ipcRenderer.removeAllListeners('user_data');
+        ipcRenderer.send('user_path');
+        ipcRenderer.on('user_path', (event, arg) => {
+            ipcRenderer.removeAllListeners('user_path');
             userDataPath = arg.path;
+            console.log(userDataPath);
         });
-
-        console.log(userDataPath);
 
         function downloadZip(url) {
             ipcRenderer.send("download", {

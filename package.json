@@ -1,8 +1,20 @@
 {
   "name": "velappshubelectron",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An installer/updater for VEL apps",
   "main": "index.js",
+  "build": {
+    "appId": "edu.uga.engr.vel.velappshubelectron",
+    "productName": "VEL Apps Hub",
+    "copyright": "Copyright © 2021 ${author}",
+    "mac": {
+      "icon": "./public/img/vel_logo_512.icns",
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "icon": "./public/img/vel_logo_512.png"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
