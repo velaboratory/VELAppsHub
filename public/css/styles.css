@@ -1,0 +1,175 @@
+body {
+    box-sizing: border-box;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #222;
+    color: #ddd;
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.flex_content {
+    display: flex;
+    position: absolute;
+    height: 100%;
+    overflow: hidden;
+}
+
+.left_sidebar {
+    max-width: 20em;
+    min-width: 15em;
+    padding: 1em;
+    box-shadow: #0005 0 0 1em;
+    box-shadow: 0 0 .2em black;
+    margin-right: 2em;
+}
+
+.left_sidebar h1 {
+    color: #fff;
+}
+
+.left_sidebar h3 {
+    text-align: left;
+    margin-top: 2em;
+    color: #fff;
+}
+
+.left_sidebar p {
+    text-align: left;
+}
+
+#logo_img {
+    margin: 1em;
+    width: 100%;
+    max-width: 10em;
+}
+
+.not_left_sidebar {
+    /* box-shadow: black 0 0 1em; */
+}
+
+#access_code_input {
+    width: 8em;
+}
+
+form input {
+    font-size: 1em;
+}
+
+form input[type=text] {
+    padding: 0.4em;
+    background-color: #252525;
+    color: #ccc;
+    border: .1em solid #555;
+}
+
+form input[type=text]:hover {
+    background-color: #303030;
+}
+
+form input[type=text]:focus {
+    border: .1em solid #888;
+    background-color: #333333;
+    outline: none;
+}
+
+form input[type=submit] {
+    padding: 0.4em .6em .4em .6em;
+    background-color: #252525;
+    color: #ccc;
+    border: .1em solid #555;
+}
+
+form input[type=submit]:hover {
+    background-color: #303030;
+    cursor: pointer;
+}
+
+form input[type=submit]:focus {
+    outline: none;
+}
+
+form input[type=submit]:active {
+    background-color: #444;
+    outline: none;
+}
+
+#flex_apps {
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
+    overflow-y: auto;
+    align-items: baseline;
+}
+
+#flex_apps .app_box {
+    min-width: 10em;
+    max-width: 15em;
+    width: 15em;
+    background-color: #282828;
+    box-shadow: 0 0 .2em black;
+    margin: 1em;
+    padding: 1em;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    border: .1em solid #0000;
+}
+
+#flex_apps .app_box:hover {
+    background-color: #303030;
+    border: .1em solid #922;
+}
+
+#flex_apps .app_box:hover .thumbnail {
+    transform: scale(1.01);
+}
+
+#flex_apps h3 {
+    margin-top: .2em;
+}
+
+#flex_apps .thumbnail {
+    width: 100%;
+}
+
+#flex_apps ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#flex_apps li {
+    margin: .2em;
+}
+
+#flex_apps a {
+    padding: .3em;
+    display: block;
+    text-decoration: none;
+    color: #ccc;
+    background-color: #222;
+    border: .1em solid black
+}
+
+#flex_apps a:hover {
+    background-color: #522;
+    border: .1em solid #a22;
+}
+
+
+
+#notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+    display: none;
+}

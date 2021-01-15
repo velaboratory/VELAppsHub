@@ -2,97 +2,7 @@
 
 <head>
     <title>VEL Apps Hub</title>
-    <style>
-        body {
-            box-sizing: border-box;
-            margin: 0;
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #333;
-            color: #ccc;
-        }
-
-        .flex_content {
-            display: flex;
-            position: absolute;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .left_sidebar {
-            max-width: 20em;
-            min-width: 15em;
-            box-shadow: black 0 0 1em;
-        }
-
-        #logo_img {
-            margin: 1em;
-            width: 100%;
-            max-width: 10em;
-        }
-
-        .not_left_sidebar {
-            box-shadow: black 0 0 1em;
-        }
-
-        #flex_apps {
-            display: flex;
-            flex-wrap: wrap;
-            height: 100%;
-            overflow-y: scroll;
-        }
-
-        #flex_apps .app_box {
-            max-width: 15em;
-            background-color: #222;
-            margin: 1em;
-            padding: 1em;
-            flex-grow: 1;
-        }
-
-        #flex_apps .thumbnail {
-            width: 100%;
-        }
-
-        #flex_apps ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        #flex_apps li {
-            margin: .2em;
-        }
-
-        #flex_apps a {
-            padding: .2em;
-            display: block;
-            text-decoration: none;
-            color: #ccc;
-            background-color: #433;
-        }
-
-        #flex_apps a:hover {
-            background-color: #544;
-        }
-
-
-
-        #notification {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 200px;
-            padding: 20px;
-            border-radius: 5px;
-            background-color: white;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="public/css/styles.css">
 </head>
 
 <body>
@@ -114,10 +24,10 @@
             <h1>VEL Apps Hub</h1>
             <p>Install and update apps made in the Virtual Experience Laboratory at the University of Georgia</p>
             <div class="access_code_box">
-                <h2>Access Code</h2>
+                <h3>Access Code</h3>
                 <p>Enter an access code to make apps available to download.</p>
                 <form id="access_code_form">
-                    <input id="access_code_input" type="text">
+                    <input id="access_code_input" type="text" spellcheck="false">
                     <input type="submit" value="Refresh">
                 </form>
             </div>
@@ -133,6 +43,9 @@
     <script>
         const { ipcRenderer } = require('electron');
         const { download } = require('electron-dl');
+        const extract = require('extract-zip');
+        const path = require('path');
+
         const version = document.getElementById('version');
 
         ipcRenderer.send('app_version');
@@ -160,9 +73,17 @@
             notification.classList.remove('hidden');
         });
 
-        ipcRenderer.on("download complete", (event, file) => {
-            console.log("HERE2");
+        ipcRenderer.send('get_config');
+        ipcRenderer.on('get_config', (event, ret) => {
+            ipcRenderer.removeAllListeners('get_config');
+            accessCodeInput.value = ret.access_code;
+            refreshApps();
+        });
+
+        ipcRenderer.on("download complete", (event, file, app) => {
             console.log(file); // Full file path
+
+            extractApp(file, app);
         });
 
         ipcRenderer.on("download progress", (event, progress) => {
@@ -170,6 +91,20 @@
             const progressInPercentages = progress * 100; // With decimal point and a bunch of numbers
             const cleanProgressInPercentages = Math.floor(progress * 100); // Without decimal point
         });
+
+        async function extractApp(file, app) {
+            try {
+                console.log('Extraction starting');
+                var appFolder = path.join(userDataPath, 'Installs', app.name);
+                await extract(file, { dir: appFolder });
+                ipcRenderer.send('write_to_file', path.join(appFolder, 'velappshub_appversion.txt'), app.version);
+                console.log('Extraction complete');
+                refreshApps();
+            } catch (err) {
+                // handle any errors
+                console.log('Extraction failed', err);
+            }
+        }
 
         function closeNotification() {
             notification.classList.add('hidden');
@@ -179,7 +114,11 @@
         }
 
         const form = document.getElementById("access_code_form");
-        function handleForm(event) { event.preventDefault(); refreshApps() }
+        function handleForm(event) {
+            event.preventDefault();
+            ipcRenderer.send('set_config', { access_code: accessCodeInput.value });
+            refreshApps();
+        }
         form.addEventListener('submit', handleForm);
 
 
@@ -202,12 +141,22 @@
             console.log(userDataPath);
         });
 
-        function downloadZip(url) {
+        function downloadZip(app) {
             ipcRenderer.send("download", {
-                url: url,
-                properties: { directory: userDataPath }
+                url: app.download,
+                properties: { directory: path.join(userDataPath, "Downloads") },
+                app: app
             });
         }
+
+
+        function deleteApp(app) {
+            ipcRenderer.send("delete_app", app);
+        }
+
+        ipcRenderer.on('refresh_apps', (event) => {
+            refreshApps();
+        });
 
 
         var apps = [];
@@ -229,66 +178,89 @@
                 });
                 apps = [];
 
-                data.apps.forEach(app => {
+                // check which apps are already installed
+                ipcRenderer.send('apps_installed', data.apps);
+                ipcRenderer.on('apps_installed', (event, apps_installed) => {
+                    ipcRenderer.removeAllListeners('apps_installed');
 
-                    var appBox = document.createElement("div");
-                    appBox.classList.add("app_box");
-                    appsFlex.appendChild(appBox);
-                    apps.push(appBox);
+                    apps_installed.forEach(app => {
 
-                    var header = document.createElement("h2");
-                    header.innerText = app.name;
-                    appBox.appendChild(header);
+                        var appBox = document.createElement("div");
+                        appBox.classList.add("app_box");
+                        appsFlex.appendChild(appBox);
+                        apps.push(appBox);
+
+                        var header = document.createElement("h3");
+                        header.innerText = app.name;
+                        appBox.appendChild(header);
 
 
-                    var img = document.createElement("img");
-                    img.classList.add("thumbnail");
-                    img.src = app.thumbnail;
-                    appBox.appendChild(img);
+                        var img = document.createElement("img");
+                        img.classList.add("thumbnail");
+                        img.src = app.thumbnail;
+                        appBox.appendChild(img);
 
-                    var buttonsList = document.createElement("ul");
-                    appBox.appendChild(buttonsList);
-
-                    // OPEN
-                    var openButtonLi = document.createElement("li");
-                    buttonsList.appendChild(openButtonLi);
-                    var openButton = document.createElement("a");
-                    openButton.innerText = "Open";
-                    openButton.href = "#";
-                    openButtonLi.appendChild(openButton);
-
-                    // UPDATE
-                    var updateButtonLi = document.createElement("li");
-                    buttonsList.appendChild(updateButtonLi);
-                    var updateButton = document.createElement("a");
-                    updateButton.innerText = "Update";
-                    updateButton.href = "#";
-                    updateButton.addEventListener("click", () => downloadZip(app.download));
-                    updateButtonLi.appendChild(updateButton);
-
-                    // INSTALL
-                    var installButtonLi = document.createElement("li");
-                    buttonsList.appendChild(installButtonLi);
-                    var installButton = document.createElement("a");
-                    installButton.innerText = "Install";
-                    installButton.href = "#";
-                    installButton.addEventListener("click", () => downloadZip(app.download));
-                    installButtonLi.appendChild(installButton);
-
-                    // UNINSTALL
-                    var uninstallButtonLi = document.createElement("li");
-                    buttonsList.appendChild(uninstallButtonLi);
-                    var uninstallButton = document.createElement("a");
-                    uninstallButton.innerText = "Uninstall";
-                    uninstallButton.href = "#";
-                    uninstallButtonLi.appendChild(uninstallButton);
+                        var buttonsList = document.createElement("ul");
+                        appBox.appendChild(buttonsList);
 
 
 
+                        // UPDATE
+                        if (app.installed && app.installed_version != app.version) {
+                            var updateButtonLi = document.createElement("li");
+                            buttonsList.appendChild(updateButtonLi);
+                            var updateButton = document.createElement("a");
+                            updateButton.innerText = "Update";
+                            updateButton.href = "#";
+                            updateButton.addEventListener("click", () => downloadZip(app));
+                            updateButtonLi.appendChild(updateButton);
+                        }
 
 
+                        // OPEN
+                        if (app.installed) {
+                            var openButtonLi = document.createElement("li");
+                            buttonsList.appendChild(openButtonLi);
+                            var openButton = document.createElement("a");
+                            openButton.innerText = "Open";
+                            openButton.href = "#";
+                            openButton.addEventListener("click", () => {
+                                ipcRenderer.send('open_exe', app.exe);
+                            });
+                            openButtonLi.appendChild(openButton);
+                        }
+
+                        // INSTALL
+                        if (!app.installed) {
+                            var installButtonLi = document.createElement("li");
+                            buttonsList.appendChild(installButtonLi);
+                            var installButton = document.createElement("a");
+                            installButton.innerText = "Install";
+                            installButton.href = "#";
+                            installButton.addEventListener("click", () => downloadZip(app));
+                            installButtonLi.appendChild(installButton);
+                        }
+
+                        // UNINSTALL
+                        if (app.installed) {
+                            var uninstallButtonLi = document.createElement("li");
+                            buttonsList.appendChild(uninstallButtonLi);
+                            var uninstallButton = document.createElement("a");
+                            uninstallButton.innerText = "Uninstall";
+                            uninstallButton.href = "#";
+                            uninstallButtonLi.addEventListener("click", () => deleteApp(app));
+                            uninstallButtonLi.appendChild(uninstallButton);
+                        }
+
+
+
+
+
+                    });
                 });
             });
         }
+
+
     </script>
 </body>

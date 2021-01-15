@@ -1,6 +1,6 @@
 {
   "name": "velappshubelectron",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "An installer/updater for VEL apps",
   "main": "index.js",
   "build": {
@@ -38,6 +38,8 @@
   "dependencies": {
     "decompress-zip": "^0.3.3",
     "electron-dl": "^3.0.2",
-    "electron-updater": "^4.3.5"
+    "electron-updater": "^4.3.5",
+    "extract-zip": "^2.0.1",
+    "yauzl": "^2.10.0"
   }
 }
