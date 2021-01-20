@@ -3,6 +3,7 @@ const { download } = require('electron-dl');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
+const cp = require('child_process');
 
 let mainWindow;
 
@@ -15,19 +16,19 @@ function createWindow() {
         }
     });
     mainWindow.loadFile('index.html');
-    Menu.setApplicationMenu(null)
+    // Menu.setApplicationMenu(null);
 
 
     ipcMain.on("download_app", (event, info) => {
-        info.properties.onProgress = status => mainWindow.webContents.send("download progress", status);
+        info.properties.onProgress = status => mainWindow.webContents.send("download progress", status, info.app);
 
         var url = "";
         if (process.platform == "win32") {
-            url = app.download_win;
+            url = info.app.download_win;
         } else if (process.platform == "darwin") {
-            url = app.download_mac;
+            url = info.app.download_mac;
         } else if (process.platform == "linux") {
-            url = app.download_linux;
+            url = info.app.download_linux;
         }
 
         download(BrowserWindow.getFocusedWindow(), url, info.properties)
@@ -67,7 +68,12 @@ ipcMain.on('user_path', (event) => {
 });
 
 ipcMain.on('open_exe', (event, path) => {
-    shell.openExternal('file://' + path);
+    if (process.platform == "win32") {
+        shell.openExternal('file://' + path);
+    } else {
+        fs.chmodSync(path, '755');
+        cp.spawn(path);
+    }
     // child(path, function (err, data) {
     //     if (err) {
     //         console.error(err);

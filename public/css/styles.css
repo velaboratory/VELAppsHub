@@ -133,6 +133,26 @@ form input[type=submit]:active {
     width: 100%;
 }
 
+progress {
+    width: -webkit-fill-available;
+    border-radius: 0;
+    margin:.2em;
+}
+
+progress::-webkit-progress-bar {
+    background: #222;
+    border: .1em solid #000;
+}
+
+progress::-webkit-progress-value {
+    background: #522;
+    border: .1em solid #a22;
+}
+
+#flex_apps progress[value="0"] {
+    display: none;
+}
+
 #flex_apps ul {
     list-style-type: none;
     margin: 0;

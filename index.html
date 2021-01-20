@@ -59,6 +59,7 @@
         const restartButton = document.getElementById('restart-button');
         const accessCodeInput = document.getElementById('access_code_input');
         const appsFlex = document.getElementById('flex_apps');
+        var progressBars = {};
 
         ipcRenderer.on('update_available', () => {
             ipcRenderer.removeAllListeners('update_available');
@@ -86,10 +87,15 @@
             extractApp(file, app);
         });
 
-        ipcRenderer.on("download progress", (event, progress) => {
-            console.log(progress); // Progress in fraction, between 0 and 1
-            const progressInPercentages = progress * 100; // With decimal point and a bunch of numbers
-            const cleanProgressInPercentages = Math.floor(progress * 100); // Without decimal point
+        ipcRenderer.on("download progress", (event, progress, app) => {
+            // console.log(progress); // Progress in fraction, between 0 and 1
+            const progressInPercentages = progress.percent * 100; // With decimal point and a bunch of numbers
+            const cleanProgressInPercentages = Math.floor(progress.percent * 100); // Without decimal point
+
+            if (app && progressBars[app.name]) {
+                console.log(cleanProgressInPercentages);
+                progressBars[app.name].value = cleanProgressInPercentages;
+            }
         });
 
         async function extractApp(file, app) {
@@ -97,13 +103,24 @@
                 console.log('Extraction starting');
                 var appFolder = path.join(userDataPath, 'Installs', app.name);
                 await extract(file, { dir: appFolder });
-                ipcRenderer.send('write_to_file', path.join(appFolder, 'velappshub_appversion.txt'), app.version);
+                ipcRenderer.send('write_to_file', path.join(appFolder, 'velappshub_appversion.txt'), getPlatformVersionFromApp(app));
                 console.log('Extraction complete');
                 refreshApps();
             } catch (err) {
                 // handle any errors
                 console.log('Extraction failed', err);
             }
+        }
+
+        function getPlatformVersionFromApp(app) {
+            if (process.platform == "win32") {
+                return app.version_win;
+            } else if (process.platform == "darwin") {
+                return app.version_mac;
+            } else if (process.platform == "linux") {
+                return app.version_linux;
+            }
+            return "";
         }
 
         function closeNotification() {
@@ -203,9 +220,16 @@
                         appBox.appendChild(buttonsList);
 
 
+                        var progressBar = document.createElement('progress');
+                        progressBars[app.name] = progressBar;
+                        // progressBar.style.display = "none";
+                        progressBar.min = 0;
+                        progressBar.max = 100;
+                        progressBar.value = 0;
+                        buttonsList.appendChild(progressBar);
 
                         // UPDATE
-                        if (app.installed && app.installed_version != app.version) {
+                        if (app.installed && app.installed_version != getPlatformVersionFromApp(app)) {
                             var updateButtonLi = document.createElement("li");
                             buttonsList.appendChild(updateButtonLi);
                             var updateButton = document.createElement("a");
