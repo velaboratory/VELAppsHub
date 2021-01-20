@@ -142,8 +142,7 @@
         });
 
         function downloadZip(app) {
-            ipcRenderer.send("download", {
-                url: app.download,
+            ipcRenderer.send("download_app", {
                 properties: { directory: path.join(userDataPath, "Downloads") },
                 app: app
             });

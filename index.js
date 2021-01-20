@@ -1,9 +1,8 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
 const { download } = require('electron-dl');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
-const child = require('child_process').execFile;
 
 let mainWindow;
 
@@ -19,10 +18,19 @@ function createWindow() {
     Menu.setApplicationMenu(null)
 
 
+    ipcMain.on("download_app", (event, info) => {
+        info.properties.onProgress = status => mainWindow.webContents.send("download progress", status);
 
-    ipcMain.on("download", (event, info) => {
-        // info.properties.onProgress = status => window.webContents.send("download progress", status);
-        download(BrowserWindow.getFocusedWindow(), info.url, info.properties)
+        var url = "";
+        if (process.platform == "win32") {
+            url = app.download_win;
+        } else if (process.platform == "darwin") {
+            url = app.download_mac;
+        } else if (process.platform == "linux") {
+            url = app.download_linux;
+        }
+
+        download(BrowserWindow.getFocusedWindow(), url, info.properties)
             .then(dl => mainWindow.webContents.send("download complete", dl.getSavePath(), info.app));
     });
 
@@ -59,14 +67,15 @@ ipcMain.on('user_path', (event) => {
 });
 
 ipcMain.on('open_exe', (event, path) => {
-    child(path, function (err, data) {
-        if (err) {
-            console.error(err);
-            return;
-        }
+    shell.openExternal('file://' + path);
+    // child(path, function (err, data) {
+    //     if (err) {
+    //         console.error(err);
+    //         return;
+    //     }
 
-        console.log(data.toString());
-    });
+    //     console.log(data.toString());
+    // });
 });
 
 ipcMain.on('write_to_file', (event, path, text) => {
@@ -149,17 +158,30 @@ function getInstallPath(app_json) {
     if (checkFileExistsSync(versionFile) && checkFileExistsSync(folder)) {
         var installed_version = fs.readFileSync(versionFile, 'utf8');
 
+        var ext = "";
+        if (process.platform == "win32") {
+            ext = ".exe";
+        } else if (process.platform == "darwin") {
+            ext = ".app";
+        } else if (process.platform == "linux") {
+            ext = ".x86_64"
+        } else {
+            console.log("Unsupported platform.");
+            return { installed: false, exe: "" };
+        }
+
         var files = fs.readdirSync(folder);
         var validFiles = [];
         files.forEach(file => {
-            if (path.extname(file) == ".exe" && !file.endsWith("UnityCrashHandler64.exe")) {
+            if (path.extname(file) == ext && !file.endsWith("UnityCrashHandler64.exe")) {
                 validFiles.push({ installed: true, exe: path.join(folder, file), installed_version: installed_version });
             }
         });
         if (validFiles.length == 1) {
             return validFiles[0];
+        } else if (validFiles.length > 1) {
+            console.log("Multiple exes detected. Don't know which one to use: " + validFiles);
         }
-
     }
     return { installed: false, exe: "" };
 }
