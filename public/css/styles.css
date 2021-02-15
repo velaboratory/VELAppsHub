@@ -75,14 +75,15 @@ form input[type=text]:focus {
 
 form input[type=submit] {
     padding: 0.4em .6em .4em .6em;
-    background-color: #252525;
     color: #ccc;
-    border: .1em solid #555;
+    background-color: #222;
+    border: .1em solid black;
+    cursor: pointer;
 }
 
 form input[type=submit]:hover {
-    background-color: #303030;
-    cursor: pointer;
+    background-color: #522;
+    border: .1em solid #a22;
 }
 
 form input[type=submit]:focus {
@@ -186,8 +187,23 @@ progress::-webkit-progress-value {
     width: 200px;
     padding: 20px;
     border-radius: 5px;
-    background-color: white;
+    background-color: #464646;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+button {
+    padding: .5em;
+    text-decoration: none;
+    color: #ccc;
+    background-color: #222;
+    border: .1em solid black;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #522;
+    border: .1em solid #a22;
 }
 
 .hidden {

@@ -1,6 +1,6 @@
 {
   "name": "velappshubelectron",
-  "version": "1.0.4",
+  "version": "1.0.10",
   "description": "An installer/updater for VEL apps",
   "main": "index.js",
   "build": {
@@ -13,7 +13,14 @@
     },
     "win": {
       "icon": "./public/img/vel_logo_512.png"
-    }
+    },
+    "files": [
+      "**/*",
+       "!**/FlaskWebExample/*"
+     ],
+     "publish": {
+       "provider": "github"
+     }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

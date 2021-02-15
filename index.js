@@ -9,14 +9,14 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1100,
+        width: 1200,
         height: 800,
         webPreferences: {
             nodeIntegration: true,
         }
     });
     mainWindow.loadFile('index.html');
-    // Menu.setApplicationMenu(null);
+    Menu.setApplicationMenu(null);
 
 
     ipcMain.on("download_app", (event, info) => {
@@ -39,6 +39,7 @@ function createWindow() {
         mainWindow = null;
     });
     mainWindow.once('ready-to-show', () => {
+        console.log('call check for updates');
         autoUpdater.checkForUpdatesAndNotify();
     });
 }
@@ -67,21 +68,16 @@ ipcMain.on('user_path', (event) => {
     event.sender.send('user_path', { path: app.getPath("userData") });
 });
 
-ipcMain.on('open_exe', (event, path) => {
+ipcMain.on('open_exe', (event, pathstr) => {
     if (process.platform == "win32") {
-        shell.openExternal('file://' + path);
+        shell.openExternal('file://' + pathstr);
     } else {
-        fs.chmodSync(path, '755');
-        cp.spawn(path);
+        // on MacOS, the internal exe name must be the same as the app name minus the version number
+        var exename = path.basename(pathstr).split('_v')[0];
+        console.log("exename:" + exename);
+        fs.chmodSync(pathstr.join(pathstr, 'Contents', 'MacOS', exename), '755');
+        cp.spawn(pathstr);
     }
-    // child(path, function (err, data) {
-    //     if (err) {
-    //         console.error(err);
-    //         return;
-    //     }
-
-    //     console.log(data.toString());
-    // });
 });
 
 ipcMain.on('write_to_file', (event, path, text) => {
