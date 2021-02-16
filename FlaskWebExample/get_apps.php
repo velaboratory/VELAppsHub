@@ -18,9 +18,17 @@ for ($i = 0; $i < count($apps["apps"]); $i++) {
         // if there is a file other than the current folder
         if (count($files) > 1) {
             // get version
-            $version = explode(".zip", explode("_v", $files[0])[1])[0];
-            $apps["apps"][$i]["version_" . $os_versions[$os_i]] = $version;
-            $apps["apps"][$i]["download_" . $os_versions[$os_i]] = get_current_folder_url() . "static/" . $apps["apps"][$i]["folder"] . "/" . $os_versions[$os_i] . "/" . $files[0];
+            $max_version = "0";
+            $max_index = 0;
+            for ($file_i = 0; $file_i < count($files); $file_i++) {
+                $version = explode(".zip", explode("_v", $files[$file_i])[1])[0];
+                if (version_compare($max_version, $version) < 0) {
+                    $max_version = $version;
+                    $max_index = $file_i;
+                }
+            }
+            $apps["apps"][$i]["version_" . $os_versions[$os_i]] = $max_version;
+            $apps["apps"][$i]["download_" . $os_versions[$os_i]] = get_current_folder_url() . "static/" . $apps["apps"][$i]["folder"] . "/" . $os_versions[$os_i] . "/" . $files[$max_index];
         }
     }
 
