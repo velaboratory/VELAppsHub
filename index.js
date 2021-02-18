@@ -73,10 +73,9 @@ ipcMain.on('open_exe', (event, pathstr) => {
         shell.openExternal('file://' + pathstr);
     } else {
         // on MacOS, the internal exe name must be the same as the app name minus the version number
-        const exeFolder = pathstr.join(pathstr, 'Contents', 'MacOS');
+        const exeFolder = path.join(pathstr, 'Contents', 'MacOS');
         var exenames = fs.readdirSync(exeFolder);
 
-        console.log("exename:" + exename);
         fs.chmodSync(exenames[0], '755');
         cp.spawn(pathstr);
     }
