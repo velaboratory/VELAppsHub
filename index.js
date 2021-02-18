@@ -75,18 +75,20 @@ ipcMain.on('open_exe', (event, pathstr) => {
         // on MacOS, the internal exe name must be the same as the app name minus the version number
         const exeFolder = path.join(pathstr, 'Contents', 'MacOS');
         var exenames = fs.readdirSync(exeFolder);
-
-        try {
-            fs.chmodSync(exenames[0], '755');
-        } catch {
-            console.log("Couldn't mark as executable #1.");
-        }
-        try {
-            fs.chmodSync(path.join(exeFolder, exenames[0]), '755');
-        } catch {
-            console.log("Couldn't mark as executable #2.");
-        }
-        cp.spawn(pathstr);
+//	console.log(pathstr);
+//        try {
+//           fs.chmodSync(exenames[0], '755');
+//        } catch {
+//            console.log("Couldn't mark as executable #1.");
+//        }
+//        try {
+//            fs.chmodSync(path.join(exeFolder, exenames[0]), '755');
+//        } catch {
+//            console.log("Couldn't mark as executable #2.");
+//        }
+	console.log("trying to spawn with " + "open " + pathstr.replace(/ /g, '\\ '));
+	cp.exec("open " + pathstr.replace(/ /g, '\\ '));
+        //cp.spawn(pathstr);
     }
 });
 

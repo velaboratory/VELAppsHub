@@ -1,6 +1,6 @@
 {
   "name": "velappshubelectron",
-  "version": "1.0.10",
+  "version": "1.0.16",
   "description": "An installer/updater for VEL apps",
   "main": "index.js",
   "build": {
@@ -9,24 +9,29 @@
     "copyright": "Copyright © 2021 ${author}",
     "mac": {
       "icon": "./public/img/vel_logo_512.icns",
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
     },
+    "afterSign": "notarize.js",
     "win": {
       "icon": "./public/img/vel_logo_512.png"
     },
     "files": [
       "**/*",
-       "!**/FlaskWebExample/*"
-     ],
-     "publish": {
-       "provider": "github"
-     }
+      "!**/FlaskWebExample/*"
+    ],
+    "publish": {
+      "provider": "github"
+    }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "electron-builder build --win --publish never",
-    "deploy": "electron-builder build --win --publish always"
+    "build": "electron-builder build --mac --publish never",
+    "deploy": "electron-builder build --win --mac --publish always"
   },
   "repository": {
     "type": "git",
@@ -44,7 +49,9 @@
   },
   "dependencies": {
     "decompress-zip": "^0.3.3",
+    "dotenv": "^8.2.0",
     "electron-dl": "^3.0.2",
+    "electron-notarize": "^1.0.0",
     "electron-updater": "^4.3.5",
     "extract-zip": "^2.0.1",
     "yauzl": "^2.10.0"
