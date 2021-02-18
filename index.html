@@ -17,6 +17,14 @@
         </button>
     </div>
 
+    <div id="modal" class="hidden">
+        <p id="modal_text"></p>
+        <button id="modal_close" onClick="closeModal()">
+            Close
+        </button>
+        <div id="modal_background"></div>
+    </div>
+
 
     <div class="flex_content">
         <div class="left_sidebar">
@@ -54,6 +62,9 @@
             version.innerText = 'Version ' + arg.version;
         });
 
+        const modal = document.getElementById('modal');
+        const modal_close = document.getElementById('modal_close');
+        const modal_text = document.getElementById('modal_text');
         const notification = document.getElementById('notification');
         const message = document.getElementById('message');
         const restartButton = document.getElementById('restart-button');
@@ -87,6 +98,11 @@
             console.log(file); // Full file path
 
             extractApp(file, app);
+        });
+
+        ipcRenderer.on("show modal", (event, text) => {
+            modal_text.innerText = text;
+            modal.classList.remove('hidden');
         });
 
         ipcRenderer.on("download progress", (event, progress, app) => {
@@ -130,6 +146,9 @@
         }
         function restartApp() {
             ipcRenderer.send('restart_app');
+        }
+        function closeModal() {
+            modal.classList.add('hidden');
         }
 
         const form = document.getElementById("access_code_form");

@@ -137,7 +137,7 @@ form input[type=submit]:active {
 progress {
     width: -webkit-fill-available;
     border-radius: 0;
-    margin:.2em;
+    margin: .2em;
 }
 
 progress::-webkit-progress-bar {
@@ -206,6 +206,44 @@ button:hover {
     border: .1em solid #a22;
 }
 
+button:focus {
+    outline: 0;
+}
+
 .hidden {
     display: none;
+}
+
+
+#modal {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin-left: -10em;
+    margin-top: -3em;
+    width: 20em;
+    padding: 1em;
+    background-color: #444;
+    border: .1em solid black;
+    box-shadow: 0 .1em .2em 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+#modal_text {
+    /* z-index: 12; */
+}
+
+#modal_close {
+    /* z-index: 12; */
+}
+
+#modal_background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: #0005;
+    z-index: -1;
 }

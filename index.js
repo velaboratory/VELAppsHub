@@ -6,6 +6,7 @@ const fs = require('fs');
 const cp = require('child_process');
 
 let mainWindow;
+let currentlyDownloading = "";
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -20,6 +21,12 @@ function createWindow() {
 
 
     ipcMain.on("download_app", (event, info) => {
+        if (currentlyDownloading != "") {
+            mainWindow.webContents.send("show modal", "Can't download this app right now. Already downloading " + currentlyDownloading);
+            return;
+        }
+
+        currentlyDownloading = info.app.name;
         info.properties.onProgress = status => mainWindow.webContents.send("download progress", status, info.app);
 
         var url = "";
@@ -32,7 +39,10 @@ function createWindow() {
         }
 
         download(BrowserWindow.getFocusedWindow(), url, info.properties)
-            .then(dl => mainWindow.webContents.send("download complete", dl.getSavePath(), info.app));
+            .then(dl => {
+                mainWindow.webContents.send("download complete", dl.getSavePath(), info.app);
+                currentlyDownloading = "";
+            });
     });
 
     mainWindow.on('closed', function () {
@@ -75,19 +85,19 @@ ipcMain.on('open_exe', (event, pathstr) => {
         // on MacOS, the internal exe name must be the same as the app name minus the version number
         const exeFolder = path.join(pathstr, 'Contents', 'MacOS');
         var exenames = fs.readdirSync(exeFolder);
-//	console.log(pathstr);
-//        try {
-//           fs.chmodSync(exenames[0], '755');
-//        } catch {
-//            console.log("Couldn't mark as executable #1.");
-//        }
-//        try {
-//            fs.chmodSync(path.join(exeFolder, exenames[0]), '755');
-//        } catch {
-//            console.log("Couldn't mark as executable #2.");
-//        }
-	console.log("trying to spawn with " + "open " + pathstr.replace(/ /g, '\\ '));
-	cp.exec("open " + pathstr.replace(/ /g, '\\ '));
+        //	console.log(pathstr);
+        //        try {
+        //           fs.chmodSync(exenames[0], '755');
+        //        } catch {
+        //            console.log("Couldn't mark as executable #1.");
+        //        }
+        //        try {
+        //            fs.chmodSync(path.join(exeFolder, exenames[0]), '755');
+        //        } catch {
+        //            console.log("Couldn't mark as executable #2.");
+        //        }
+        console.log("trying to spawn with " + "open " + pathstr.replace(/ /g, '\\ '));
+        cp.exec("open " + pathstr.replace(/ /g, '\\ '));
         //cp.spawn(pathstr);
     }
 });
