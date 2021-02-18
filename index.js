@@ -71,12 +71,21 @@ ipcMain.on('user_path', (event) => {
 ipcMain.on('open_exe', (event, pathstr) => {
     if (process.platform == "win32") {
         shell.openExternal('file://' + pathstr);
-    } else {
+    } else if (process.platform == "darwin") {
         // on MacOS, the internal exe name must be the same as the app name minus the version number
         const exeFolder = path.join(pathstr, 'Contents', 'MacOS');
         var exenames = fs.readdirSync(exeFolder);
 
-        fs.chmodSync(exenames[0], '755');
+        try {
+            fs.chmodSync(exenames[0], '755');
+        } catch {
+            console.log("Couldn't mark as executable #1.");
+        }
+        try {
+            fs.chmodSync(path.join(exeFolder, exenames[0]), '755');
+        } catch {
+            console.log("Couldn't mark as executable #2.");
+        }
         cp.spawn(pathstr);
     }
 });
