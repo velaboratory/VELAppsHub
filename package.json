@@ -1,6 +1,6 @@
 {
   "name": "velappshubelectron",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "An installer/updater for VEL apps",
   "main": "index.js",
   "build": {
