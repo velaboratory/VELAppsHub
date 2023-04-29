@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { SettingsManager } from 'tauri-settings';
-	import type { SettingsSchema } from '../lib/types';
+	import type { AppData, AppsResponse, SettingsSchema } from '../lib/types';
 
 	let accessCode = '';
-	let appsData;
+	let appsData: AppData[] = [];
 	const settingsManager = new SettingsManager<SettingsSchema>(
 		{
 			accessCode: ''
@@ -22,14 +22,15 @@
 		// at a later time
 		await settingsManager.syncCache();
 		accessCode = await settingsManager.get('accessCode');
+		refreshApps();
 	});
 
 	function refreshApps() {
-		fetch(`https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php?access_code=${accessCode}`)
+		fetch(`http://127.0.0.1:8000/get_apps?access_code=${accessCode}`)
 			.then((r) => r.json())
 			.then((r) => {
 				console.log(r);
-				appsData = r;
+				appsData = r.apps;
 			});
 	}
 </script>
@@ -67,7 +68,24 @@
 		<p id="version" />
 	</div>
 	<div class="not_left_sidebar">
-		<div id="flex_apps" />
+		<div id="flex_apps">
+			{#if appsData}
+				{#each appsData as app}
+					<div class="app_box">
+						<h3>{app.name}</h3>
+						<img src={app.thumbnail} class="thumbnail" alt="thumbnail" />
+						<div class="buttons_list">
+							<button>Open</button>
+							<button>Install</button>
+							<button>Uninstall</button>
+							<progress />
+						</div>
+					</div>
+				{/each}
+			{:else}
+				<progress />
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -172,13 +190,12 @@
 		flex-wrap: wrap;
 		height: 100%;
 		overflow-y: auto;
-		align-items: baseline;
 	}
 
 	#flex_apps .app_box {
-		min-width: 10em;
-		max-width: 15em;
-		width: 15em;
+		min-width: 12em;
+		max-width: 20em;
+		width: 10em;
 		background-color: #282828;
 		box-shadow: 0 0 0.2em black;
 		margin: 1em;
@@ -297,5 +314,11 @@
 		margin: 0;
 		background-color: #0005;
 		z-index: -1;
+	}
+	.buttons_list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25em;
+		margin-top: 1em;
 	}
 </style>

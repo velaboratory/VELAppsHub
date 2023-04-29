@@ -4,9 +4,8 @@
 )]
 
 extern crate directories;
-use std::{fs, path::Path};
-
 use directories::BaseDirs;
+use std::{fs, path::Path};
 
 fn main() {
     tauri::Builder::default()
@@ -29,4 +28,11 @@ fn open_installs_folder() {
     }
 }
 
+struct AppDetails {
+    id: str,
+    os: str,
+    installed: bool,
+}
 
+#[tauri::command]
+fn apps_installed() -> bool {}

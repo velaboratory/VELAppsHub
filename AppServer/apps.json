@@ -1,0 +1,58 @@
+{
+	"apps": [
+		{
+			"name": "ENGREDUVR",
+			"description": "Engineering Education at UGA in VR",
+			"folder": "engreduvr",
+			"accessible_by": ["engr", "dev"]
+		},
+		{
+			"name": "ENGREDUVR Desktop",
+			"description": "Engineering Education at UGA in VR (Desktop Version)",
+			"folder": "engreduvr2d",
+			"accessible_by": ["engr", "baffour2021", "dev"]
+		},
+		{
+			"name": "conVRged",
+			"description": "Multi-purpose meeting room in VR",
+			"folder": "convrged",
+			"accessible_by": ["vfr", "dev", "convrged"]
+		},
+		{
+			"name": "VR-Statics",
+			"description": "Multi-user statics problems with drawing (2D)",
+			"folder": "vrstatics",
+			"accessible_by": ["engr", "dev", "statics"]
+		},
+		{
+			"name": "VR-Statics Measurement Enabled",
+			"description": "Multi-user statics problems with drawing (2D)",
+			"folder": "vrstatics-meas",
+			"accessible_by": ["engr", "dev", "statics"]
+		},
+		{
+			"name": "VR-Statics-Beta",
+			"description": "Multi-user statics problems with drawing (2D)",
+			"folder": "vrstaticsbeta",
+			"accessible_by": ["dev"]
+		},
+		{
+			"name": "DataFoldvr",
+			"description": "Explore data analytics in VR",
+			"folder": "datafoldvr",
+			"accessible_by": ["gcr", "dev"]
+		},
+		{
+			"name": "DataFoldvr (2D)",
+			"description": "Explore data analytics in 2D. Gross.",
+			"folder": "datafoldvr2d",
+			"accessible_by": ["gcr-hide", "dev"]
+		},
+		{
+			"name": "VEL-Share",
+			"description": "Share your screen to other apps using WebRTC",
+			"folder": "vel_share",
+			"accessible_by": ["vfr", "dev", "convrged", "vel_share"]
+		}
+	]
+}
