@@ -1,37 +1,42 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { SettingsManager } from 'tauri-settings';
-	import type { AppData, AppsResponse, SettingsSchema } from '../lib/types';
+	import type { ServerAppData, AppsResponse, SettingsSchema, LocalAppState, AppSettings } from '$lib/types';
 
 	let accessCode = '';
-	let appsData: AppData[] = [];
-	const settingsManager = new SettingsManager<SettingsSchema>(
-		{
-			accessCode: ''
-		},
-		{
-			// options
-			fileName: 'customization-settings'
-		}
-	);
+	let localAppStates: { [key: string]: LocalAppState };
+	let appDefinitions: ServerAppData[] = [];
 
-	// checks whether the settings file exists and creates it if not
-	// loads the settings if it exists
-	settingsManager.initialize().then(async () => {
-		// settingsManager.setCache('accessCode', '');
-		// at a later time
-		await settingsManager.syncCache();
-		accessCode = await settingsManager.get('accessCode');
-		refreshApps();
-	});
+	invoke('get_settings', {})
+		.then((r) => r as AppSettings)
+		.then((r) => {
+			console.log(r);
+			accessCode = r.access_code;
+			refreshApps();
+		});
 
 	function refreshApps() {
 		fetch(`http://127.0.0.1:8000/get_apps?access_code=${accessCode}`)
 			.then((r) => r.json())
-			.then((r) => {
-				console.log(r);
-				appsData = r.apps;
+			.then((r: AppsResponse) => {
+				appDefinitions = r.apps;
+				for (let app of appDefinitions) {
+					invoke('get_installed_app', { id: app.folder }).then((r) => {
+						console.log(r);
+						console.log(app);
+						// localAppStates[app.folder] = r as LocalAppState;
+						console.log(localAppStates);
+					});
+				}
 			});
+	}
+
+	$: {
+		invoke('set_settings', {
+			settings: {
+				access_code: accessCode
+			}
+		});
 	}
 </script>
 
@@ -69,8 +74,8 @@
 	</div>
 	<div class="not_left_sidebar">
 		<div id="flex_apps">
-			{#if appsData}
-				{#each appsData as app}
+			{#if appDefinitions}
+				{#each appDefinitions as app}
 					<div class="app_box">
 						<h3>{app.name}</h3>
 						<img src={app.thumbnail} class="thumbnail" alt="thumbnail" />

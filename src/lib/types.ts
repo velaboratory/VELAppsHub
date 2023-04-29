@@ -3,10 +3,10 @@ export type SettingsSchema = {
 };
 
 export type AppsResponse = {
-	apps: AppData[];
+	apps: ServerAppData[];
 };
 
-export type AppData = {
+export type ServerAppData = {
 	name: string;
 	description: string;
 	folder: string;
@@ -18,3 +18,13 @@ export type AppData = {
 	version_linux?: string;
 	download_linux?: string;
 };
+
+export type LocalAppState = {
+	id:string;
+	exe_path:string;
+	installed_version:string;
+}
+
+export type AppSettings = {
+	access_code:string;
+}
