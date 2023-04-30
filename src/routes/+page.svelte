@@ -29,7 +29,12 @@
 		});
 
 	listen('app-installed', (event) => {
-		refreshLocalApps();
+		if (!event.payload) return;
+		let p = event.payload as string;
+		invoke('get_installed_app', { id: p }).then((r) => {
+			localAppStates[p] = r as LocalAppState;
+			console.log(r);
+		});
 	});
 	listen('install-progress', (event) => {
 		if (!event.payload) return;
@@ -139,7 +144,13 @@
 								<progress value={localAppStates[app.folder]?.progress ?? ''} max="1" />
 							{:else}
 								{#if localAppStates[app.folder]?.installed_version !== '' && localAppStates[app.folder]?.installed_version !== app.version}
-									<button>Update</button>
+									<button
+										on:click={() => {
+											install(app);
+										}}
+									>
+										Update
+									</button>
 								{/if}
 
 								{#if localAppStates[app.folder]?.exe_path !== ''}

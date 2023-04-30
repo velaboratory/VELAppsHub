@@ -18,7 +18,7 @@ use std::{
     fs::{self, File},
     path::Path,
 };
-use tauri::{Manager, Window};
+use tauri::Window;
 
 fn main() {
     tauri::Builder::default()
@@ -220,16 +220,7 @@ fn install_app(window: Window, app: AppServerDetails) {
             .unwrap();
 
             println!("done installing");
-            window
-                .emit(
-                    "install-progress",
-                    AppProgress {
-                        id: app.folder.clone(),
-                        progress: 1.0,
-                        task: String::from("Done"),
-                    },
-                )
-                .unwrap();
+            window.emit("app-installed", app.folder.clone()).unwrap();
         });
     }
 }
