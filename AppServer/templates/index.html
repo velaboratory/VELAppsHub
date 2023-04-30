@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VELAppsHub Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura-dark.css" type="text/css">
+    <style>
+        .card {
+            border: 1px solid #fff2;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 10px 10px 10px #0002;
+        }
+
+        .card h3 {
+            margin-top:0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>VEL Apps Hub Dashboard</h1>
+    <h3>Current Apps:</h3>
+    <ul id="current_apps">
+        {% for app in apps %}
+        <li>{{app.name}}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="card">
+        <h3>Upload File</h3>
+        <form action="/upload" enctype="multipart/form-data" method="post">
+            <label>
+                App name
+                <select name="folder">
+                    {% for app in apps %}
+                    <option value="{{app.folder}}">{{app.name}}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Platform
+                <select name="platform">
+                    <option value="win">Windows</option>
+                    <option value="mac">MacOS</option>
+                    <option value="linux">Linux</option>
+                </select>
+            </label>
+            <label>
+                Version
+                <input name="version" placeholder="e.g. 1.0" />
+            </label>
+            <label>
+                Application .zip
+                <input name="file" type="file" />
+            </label>
+            <input type="submit" value="Upload"></input>
+        </form>
+    </div>
+    <br>
+    <div class="card">
+        <h3>Create App</h3>
+        <p>If the <code>folder</code> field is the same as an existing app, the details are replaced.</p>
+        <form action="/create_app" enctype="multipart/form-data" method="post">
+            <label>
+                App name
+                <input name="name" />
+            </label>
+            <label>
+                Description
+                <input name="description" />
+            </label>
+            <label>
+                Folder
+                <input name="folder" />
+            </label>
+            <label>
+                Access Codes (comma-separated list)
+                <input name="accessible_by" />
+            </label>
+
+            <input type="submit" value="Create" />
+        </form>
+    </div>
+</body>
+
+</html>
