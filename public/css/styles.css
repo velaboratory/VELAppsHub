@@ -8,6 +8,10 @@ body {
     font-size: 1.1em;
 }
 
+.hide {
+    display: none;
+}
+
 .flex_content {
     display: flex;
     position: absolute;
@@ -60,7 +64,7 @@ form input[type=text] {
     padding: 0.4em;
     background-color: #252525;
     color: #ccc;
-    border: .1em solid #555;
+    border: .1em solid #000;
 }
 
 form input[type=text]:hover {

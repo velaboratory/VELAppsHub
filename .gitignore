@@ -78,3 +78,5 @@ patches/mtime-cache.json
 FlaskWebExample/env/
 FlaskWebExample/static/
 set_environment_var.ps1
+
+build/

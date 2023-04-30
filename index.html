@@ -25,10 +25,9 @@
         <div id="modal_background"></div>
     </div>
 
-
     <div class="flex_content">
         <div class="left_sidebar">
-            <img id="logo_img" src="public/img/VEL_logo_transparent.png">
+            <img id="logo_img" src="public/img/vel_logo_beveled.png">
             <h1>VEL Apps Hub</h1>
             <p>Install and update apps made in the Virtual Experience Laboratory at the University of Georgia</p>
             <div class="access_code_box">
@@ -39,6 +38,11 @@
                     <input type="submit" value="Refresh">
                 </form>
             </div>
+
+            <form id="open_install_folder">
+                <input type="submit" value="Open Install Folder" style="margin-top:2em;">
+            </form>
+
             <p id="version"></p>
         </div>
         <div class="not_left_sidebar">
@@ -71,6 +75,7 @@
         const accessCodeInput = document.getElementById('access_code_input');
         const appsFlex = document.getElementById('flex_apps');
         var progressBars = {};
+        var appButtons = {};
 
         ipcRenderer.on('update_available', () => {
             console.log("update available");
@@ -110,9 +115,14 @@
             const progressInPercentages = progress.percent * 100; // With decimal point and a bunch of numbers
             const cleanProgressInPercentages = Math.floor(progress.percent * 100); // Without decimal point
 
-            if (app && progressBars[app.name]) {
+            if (app && appButtons[app.name]) {
                 console.log(cleanProgressInPercentages);
-                progressBars[app.name].value = cleanProgressInPercentages;
+                appButtons[app.name]['progress'].value = cleanProgressInPercentages;
+                if (cleanProgressInPercentages != 0) {
+                    appButtons[app.name]['list'].classList.add('hide');
+                } else {
+                    appButtons[app.name]['list'].classList.remove('hide');
+                }
             }
         });
 
@@ -152,12 +162,20 @@
         }
 
         const form = document.getElementById("access_code_form");
-        function handleForm(event) {
+        function setConfig(event) {
             event.preventDefault();
             ipcRenderer.send('set_config', { access_code: accessCodeInput.value });
             refreshApps();
         }
-        form.addEventListener('submit', handleForm);
+        form.addEventListener('submit', setConfig);
+
+
+        const install_folder_button = document.getElementById("open_install_folder");
+        function openInstallFolder(event) {
+            event.preventDefault();
+            ipcRenderer.send('open_installs_folder');
+        }
+        install_folder_button.addEventListener('submit', openInstallFolder);
 
 
         function httpGetAsync(theUrl, callback) {
@@ -195,14 +213,9 @@
             refreshApps();
         });
 
-
         var apps = [];
 
-
-
         function refreshApps() {
-
-
 
 
             var url = "https://vel.engr.uga.edu/apps/VELAppsHub/get_apps.php?access_code=" + accessCodeInput.value;
@@ -242,12 +255,14 @@
 
 
                         var progressBar = document.createElement('progress');
-                        progressBars[app.name] = progressBar;
+                        appButtons[app.name] = {};
+                        appButtons[app.name]['progress'] = progressBar;
+                        appButtons[app.name]['list'] = buttonsList;
                         // progressBar.style.display = "none";
                         progressBar.min = 0;
                         progressBar.max = 100;
                         progressBar.value = 0;
-                        buttonsList.appendChild(progressBar);
+                        appBox.appendChild(progressBar);
 
                         // UPDATE
                         if (app.installed && app.installed_version != getPlatformVersionFromApp(app)) {
@@ -258,6 +273,7 @@
                             updateButton.href = "#";
                             updateButton.addEventListener("click", () => downloadZip(app));
                             updateButtonLi.appendChild(updateButton);
+                            appButtons[app.name]['update'] = updateButton;
                         }
 
 
@@ -272,6 +288,7 @@
                                 ipcRenderer.send('open_exe', app.exe);
                             });
                             openButtonLi.appendChild(openButton);
+                            appButtons[app.name]['open'] = openButton;
                         }
 
                         // INSTALL
@@ -283,6 +300,7 @@
                             installButton.href = "#";
                             installButton.addEventListener("click", () => downloadZip(app));
                             installButtonLi.appendChild(installButton);
+                            appButtons[app.name]['install'] = installButton;
                         }
 
                         // UNINSTALL
@@ -294,9 +312,8 @@
                             uninstallButton.href = "#";
                             uninstallButtonLi.addEventListener("click", () => deleteApp(app));
                             uninstallButtonLi.appendChild(uninstallButton);
+                            appButtons[app.name]['uninstall'] = uninstallButton;
                         }
-
-
 
 
 
