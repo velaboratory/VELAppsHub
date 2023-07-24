@@ -237,7 +237,8 @@ function getInstallPath(app_json) {
     files.forEach((file) => {
       if (
         path.extname(file) == ext &&
-        !file.endsWith("UnityCrashHandler64.exe")
+        !file.endsWith("UnityCrashHandler64.exe") &&
+        !file.endsWith("crashpad_handler.exe")
       ) {
         validFiles.push({
           installed: true,
@@ -249,9 +250,13 @@ function getInstallPath(app_json) {
     if (validFiles.length == 1) {
       return validFiles[0];
     } else if (validFiles.length > 1) {
-      console.log(
-        "Multiple exes detected. Don't know which one to use: " + validFiles
+      const best = validFiles.reduce((a, b) =>
+        similarity(path.basename(a.exe), app_json.name) >
+        similarity(path.basename(b.exe), app_json.name)
+          ? a
+          : b
       );
+      return best;
     }
   }
   return { installed: false, exe: "" };
@@ -265,6 +270,48 @@ function checkFileExistsSync(filepath) {
     flag = false;
   }
   return flag;
+}
+
+// https://stackoverflow.com/a/36566052
+// Levenshtein distance
+function similarity(s1, s2) {
+  var longer = s1;
+  var shorter = s2;
+  if (s1.length < s2.length) {
+    longer = s2;
+    shorter = s1;
+  }
+  var longerLength = longer.length;
+  if (longerLength == 0) {
+    return 1.0;
+  }
+  return (
+    (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength)
+  );
+}
+
+function editDistance(s1, s2) {
+  s1 = s1.toLowerCase();
+  s2 = s2.toLowerCase();
+
+  var costs = new Array();
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
+      if (i == 0) costs[j] = j;
+      else {
+        if (j > 0) {
+          var newValue = costs[j - 1];
+          if (s1.charAt(i - 1) != s2.charAt(j - 1))
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0) costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
 }
 
 autoUpdater.on("update-available", () => {
